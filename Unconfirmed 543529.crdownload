@@ -1,0 +1,181 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+pip install pandas
+
+
+# In[2]:
+
+
+import pandas as pd
+
+
+# In[3]:
+
+
+import pandas as pd
+
+# Assuming the dataset file is named "loan.csv" and it's in the same directory as your notebook
+file_path = "loan_data.csv"
+df = pd.read_csv(file_path)
+
+# Now you can work with the DataFrame 'df'
+
+
+# In[4]:
+
+
+df
+
+
+# In[5]:
+
+
+import pandas as pd
+import sqlite3
+
+# Step 1: Acquire data (assuming you have the loan.csv file in your directory)
+file_path = "loan_data.csv"
+data = pd.read_csv(file_path)
+
+# Step 2: Establish a connection to your SQLite database
+conn = sqlite3.connect('loans.db')
+
+# Step 3: Create a table schema
+create_table_query = '''
+CREATE TABLE IF NOT EXISTS loans (
+    Credit_Policy INTEGER,
+    Purpose TEXT,
+    Int_Rate FLOAT,
+    Installment FLOAT,
+    Log_Annual_Inc FLOAT,
+    DTI FLOAT,
+    FICO INTEGER,
+    Days_with_CR_Line FLOAT,
+    Revol_Bal FLOAT,
+    Revol_Util FLOAT,
+    Inq_Last_6mths INTEGER,
+    Delinq_2yrs INTEGER,
+    Pub_Rec INTEGER,
+    Not_Fully_Paid INTEGER
+)
+'''
+conn.execute(create_table_query)
+
+# Step 4: Insert data into the table
+data_subset = data[[
+    'credit.policy', 'purpose', 'int.rate', 'installment', 'log.annual.inc',
+    'dti', 'fico', 'days.with.cr.line', 'revol.bal', 'revol.util',
+    'inq.last.6mths', 'delinq.2yrs', 'pub.rec', 'not.fully.paid'
+]]
+data_subset.columns = ['Credit_Policy', 'Purpose', 'Int_Rate', 'Installment', 'Log_Annual_Inc',
+                       'DTI', 'FICO', 'Days_with_CR_Line', 'Revol_Bal', 'Revol_Util',
+                       'Inq_Last_6mths', 'Delinq_2yrs', 'Pub_Rec', 'Not_Fully_Paid']
+data_subset.to_sql('loans', conn, if_exists='replace', index=False)
+
+# Step 5: Commit changes and close the connection
+conn.commit()
+conn.close()
+
+
+# In[6]:
+
+
+import sqlite3
+
+# Connect to the SQLite database
+conn = sqlite3.connect('loans.db')
+
+# Create a cursor object to execute SQL queries
+cursor = conn.cursor()
+
+# Example: Query the first 5 rows from the 'loans' table
+cursor.execute("SELECT * FROM loans LIMIT 5")
+rows = cursor.fetchall()
+
+# Display the results
+for row in rows:
+    print(row)
+
+# Close the connection
+conn.close()
+
+
+# In[7]:
+
+
+import pandas as pd
+import sqlite3
+
+def acquire_and_store_data():
+    # Acquire data (assuming you have the loan.csv file in your directory)
+    file_path = "loan_data.csv"
+    data = pd.read_csv(file_path)
+
+    # Establish a connection to your SQLite database
+    conn = sqlite3.connect('loans.db')
+
+    # Insert data into the 'loans' table
+    data.to_sql('loans', conn, if_exists='replace', index=False)
+
+    # Commit changes and close the connection
+    conn.commit()
+    conn.close()
+
+    print("Data acquisition and storage completed successfully.")
+
+# Run the batch process once
+acquire_and_store_data()
+print("Batch process completed.")
+
+
+# In[8]:
+
+
+pip install schedule
+
+
+# In[ ]:
+
+
+import pandas as pd
+import sqlite3
+import schedule
+import time
+
+def acquire_and_store_data():
+    print("Data acquisition and storage process started...")
+    
+    # Acquire data (assuming you have the loan.csv file in your directory)
+    file_path = "loan_data.csv"
+    data = pd.read_csv(file_path)
+
+    # Establish a connection to your SQLite database
+    conn = sqlite3.connect('loans.db')
+
+    # Insert data into the 'loans' table
+    data.to_sql('loans', conn, if_exists='replace', index=False)
+
+    # Commit changes and close the connection
+    conn.commit()
+    conn.close()
+
+    print("Data acquisition and storage completed successfully.")
+
+# Define the job to be scheduled
+def scheduled_job():
+    print("Scheduled job starting...")
+    acquire_and_store_data()
+    print("Scheduled job completed.")
+
+# Schedule the job to run every 24 hours
+schedule.every(24).hours.do(scheduled_job)
+
+# Run the scheduler continuously
+while True:
+    schedule.run_pending()
+    time.sleep(1)
+

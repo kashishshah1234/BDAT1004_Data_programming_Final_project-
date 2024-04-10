@@ -1,0 +1,276 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+pip install dash
+
+
+# In[2]:
+
+
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+import pandas as pd
+
+app = dash.Dash(__name__)
+
+# Load your dataset
+# For example, assuming your dataset is a CSV file named 'loan_data.csv' in the same directory
+data = pd.read_csv('loan_data.csv')
+
+# Define the layout of the application
+app.layout = html.Div(
+    style={'font-family': 'Arial, sans-serif', 'margin': '50px'},
+    children=[
+        html.H1('Dataset Display', style={'text-align': 'center'}),
+        
+        html.Div(
+            style={'display': 'flex', 'justify-content': 'center', 'margin-bottom': '30px'},
+            children=[
+                dcc.Dropdown(
+                    id='column-dropdown',
+                    options=[{'label': col, 'value': col} for col in data.columns],
+                    value=data.columns[0],  # Default value
+                    style={'width': '300px'}
+                ),
+            ]
+        ),
+        
+        html.Div(
+            style={'display': 'flex', 'justify-content': 'space-between'},
+            children=[
+                dcc.Graph(
+                    id='line-plot',
+                    style={'width': '48%', 'margin-right': '10px'}
+                ),
+                
+                dcc.Graph(
+                    id='scatter-plot',
+                    style={'width': '48%', 'margin-left': '10px'}
+                )
+            ]
+        )
+    ]
+)
+
+# Callback to update the line plot
+@app.callback(
+    Output('line-plot', 'figure'),
+    [Input('column-dropdown', 'value')]
+)
+def update_line_plot(selected_column):
+    return {
+        'data': [{
+            'x': data.index,
+            'y': data[selected_column],
+            'type': 'line',
+            'name': selected_column
+        }],
+        'layout': {
+            'title': f'Line Plot of {selected_column}',
+            'xaxis': {'title': 'Index'},
+            'yaxis': {'title': selected_column},
+            'margin': {'l': 40, 'b': 40, 't': 40, 'r': 40},
+            'height': 400
+        }
+    }
+
+# Callback to update the scatter plot
+@app.callback(
+    Output('scatter-plot', 'figure'),
+    [Input('column-dropdown', 'value')]
+)
+def update_scatter_plot(selected_column):
+    return {
+        'data': [{
+            'x': data[selected_column],
+            'y': data[data.columns[0]],  # For simplicity, using the first column for y-axis
+            'mode': 'markers',
+            'name': selected_column
+        }],
+        'layout': {
+            'title': f'Scatter Plot of {selected_column} vs. {data.columns[0]}',
+            'xaxis': {'title': selected_column},
+            'yaxis': {'title': data.columns[0]},
+            'margin': {'l': 40, 'b': 40, 't': 40, 'r': 40},
+            'height': 400
+        }
+    }
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
+
+
+# In[3]:
+
+
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+import pandas as pd
+
+app = dash.Dash(__name__)
+
+# Load your dataset
+# For example, assuming your dataset is a CSV file named 'loan_data.csv' in the same directory
+data = pd.read_csv('loan_data.csv')
+
+# Define the layout of the application
+app.layout = html.Div([
+    html.H1('Dataset Display'),
+    
+    # Dropdown to select columns
+    dcc.Dropdown(
+        id='column-dropdown',
+        options=[{'label': col, 'value': col} for col in data.columns],
+        value=data.columns[0]  # Default value
+    ),
+    
+    # Line plot
+    dcc.Graph(id='line-plot'),
+    
+    # Scatter plot
+    dcc.Graph(id='scatter-plot')
+])
+
+# Callback to update the line plot
+@app.callback(
+    Output('line-plot', 'figure'),
+    [Input('column-dropdown', 'value')]
+)
+def update_line_plot(selected_column):
+    return {
+        'data': [{
+            'x': data.index,
+            'y': data[selected_column],
+            'type': 'line',
+            'name': selected_column
+        }],
+        'layout': {
+            'title': f'Line Plot of {selected_column}',
+            'xaxis': {'title': 'Index'},
+            'yaxis': {'title': selected_column}
+        }
+    }
+
+# Callback to update the scatter plot
+@app.callback(
+    Output('scatter-plot', 'figure'),
+    [Input('column-dropdown', 'value')]
+)
+def update_scatter_plot(selected_column):
+    return {
+        'data': [{
+            'x': data[selected_column],
+            'y': data[data.columns[0]],  # For simplicity, using the first column for y-axis
+            'mode': 'markers',
+            'name': selected_column
+        }],
+        'layout': {
+            'title': f'Scatter Plot of {selected_column} vs. {data.columns[0]}',
+            'xaxis': {'title': selected_column},
+            'yaxis': {'title': data.columns[0]}
+        }
+    }
+
+if __name__ == '__main__':
+    app.run_server(debug=True, port=8051)  # Use port 8051 instead of 8050
+
+
+# In[4]:
+
+
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+import dash_table
+import pandas as pd
+
+app = dash.Dash(__name__)
+
+# Load your dataset
+# For example, assuming your dataset is a CSV file named 'loan_data.csv' in the same directory
+data = pd.read_csv('loan_data.csv')
+
+# Define the layout of the application
+app.layout = html.Div([
+    html.H1('Dataset Display'),
+    
+    # Dropdown to select columns
+    dcc.Dropdown(
+        id='column-dropdown',
+        options=[{'label': col, 'value': col} for col in data.columns],
+        value=data.columns[0],  # Default value
+        style={'width': '300px', 'margin-bottom': '20px'}
+    ),
+    
+    # Line plot
+    dcc.Graph(id='line-plot'),
+    
+    # Scatter plot
+    dcc.Graph(id='scatter-plot'),
+    
+    # Table to display dataset
+    dash_table.DataTable(
+        id='datatable',
+        columns=[{'name': col, 'id': col} for col in data.columns],
+        data=data.to_dict('records'),
+        style_table={'margin-top': '20px'}
+    )
+])
+
+# Callback to update the line plot
+@app.callback(
+    Output('line-plot', 'figure'),
+    [Input('column-dropdown', 'value')]
+)
+def update_line_plot(selected_column):
+    return {
+        'data': [{
+            'x': data.index,
+            'y': data[selected_column],
+            'type': 'line',
+            'name': selected_column
+        }],
+        'layout': {
+            'title': f'Line Plot of {selected_column}',
+            'xaxis': {'title': 'Index'},
+            'yaxis': {'title': selected_column}
+        }
+    }
+
+# Callback to update the scatter plot
+@app.callback(
+    Output('scatter-plot', 'figure'),
+    [Input('column-dropdown', 'value')]
+)
+def update_scatter_plot(selected_column):
+    return {
+        'data': [{
+            'x': data[selected_column],
+            'y': data[data.columns[0]],  # For simplicity, using the first column for y-axis
+            'mode': 'markers',
+            'name': selected_column
+        }],
+        'layout': {
+            'title': f'Scatter Plot of {selected_column} vs. {data.columns[0]}',
+            'xaxis': {'title': selected_column},
+            'yaxis': {'title': data.columns[0]}
+        }
+    }
+
+if __name__ == '__main__':
+    app.run_server(debug=True, port=8052)  # Use port 8052 instead of 8051
+
+
+# In[ ]:
+
+
+
+
